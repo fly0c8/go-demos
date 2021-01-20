@@ -25,34 +25,7 @@ type TariffModelsUsed struct {
 	TariffModel string
 }
 
-var (
-	tariffPlan1 = Tariffplan{
-		TariffMax: 20,
-		AssignedTariffModels: []AssignedTariffModel{
-			{Weekday: 0, OffsetInMinutes: 0, TariffModel: "fullday"},
 
-			{Weekday: 1, OffsetInMinutes: 0, TariffModel: "frueh"},          // 0-6h
-			{Weekday: 1, OffsetInMinutes: 21600, TariffModel: "vormittag"},  // 6-12h
-			{Weekday: 1, OffsetInMinutes: 43200, TariffModel: "nachmittag"}, // 12-18h
-			{Weekday: 1, OffsetInMinutes: 64800, TariffModel: "abend"},      // 18-24h
-
-			{Weekday: 2, OffsetInMinutes: 0, TariffModel: "vormittag"},
-			{Weekday: 2, OffsetInMinutes: 43200, TariffModel: "nachmittag"},
-
-			{Weekday: 3, OffsetInMinutes: 0, TariffModel: "vormittag"},
-			{Weekday: 3, OffsetInMinutes: 43200, TariffModel: "nachmittag"},
-
-			{Weekday: 4, OffsetInMinutes: 0, TariffModel: "vormittag"},
-			{Weekday: 4, OffsetInMinutes: 43200, TariffModel: "nachmittag"},
-
-			{Weekday: 5, OffsetInMinutes: 0, TariffModel: "vormittag"},
-			{Weekday: 5, OffsetInMinutes: 43200, TariffModel: "nachmittag"},
-
-			{Weekday: 6, OffsetInMinutes: 0, TariffModel: "vormittag"},
-			{Weekday: 6, OffsetInMinutes: 43200, TariffModel: "nachmittag"},
-		},
-	}
-)
 
 func day2str(day int) string {
 	switch day {
@@ -81,7 +54,7 @@ func offsetToHMS(offsetInSeconds int64) (int64, int64, int64) {
 	seconds := remainingSecs % 60
 	return hours, minutes, seconds
 }
-func calcDay(from time.Time, day int, fromOffset, toOffset int64) []TariffModelsUsed {
+func calcDay(tp* Tariffplan, from time.Time, day int, fromOffset, toOffset int64) []TariffModelsUsed {
 
 	//fromH, fromM, fromS := offsetToHMS(fromOffset)
 	//toH, toM, toS := offsetToHMS(toOffset)
@@ -91,7 +64,7 @@ func calcDay(from time.Time, day int, fromOffset, toOffset int64) []TariffModels
 	usedTariffModels := []TariffModelsUsed{}
 
 	tariffModels := []AssignedTariffModel{}
-	for _, tm := range tariffPlan1.AssignedTariffModels {
+	for _, tm := range tp.AssignedTariffModels {
 		if tm.Weekday == day {
 			tariffModels = append(tariffModels, tm)
 		}
@@ -213,14 +186,13 @@ func calcDay(from time.Time, day int, fromOffset, toOffset int64) []TariffModels
 const(
 	SECS_PER_DAY  = int64(86400)
 )
-func PrintDays(fromEpoch int64, toEpoch int64) {
+func FindTariffModelsAndDurations(tariffPlan *Tariffplan, fromEpoch int64, toEpoch int64) []TariffModelsUsed {
 
 	tariffModelsUsed := []TariffModelsUsed{}
 
 	startEpoch := fromEpoch
 
 	for {
-		//fmt.Printf("%v --> %v\n",time.Unix(startEpoch,0) , time.Unix(toEpoch,0))
 
 		start := time.Unix(startEpoch, 0)
 		t0 := time.Date(start.Year(), start.Month(), start.Day(), 0,0,0, 0, time.Local)
@@ -231,26 +203,15 @@ func PrintDays(fromEpoch int64, toEpoch int64) {
 			toOffset = toEpoch - t0.Unix()
 		}
 
-		tariffModelsUsed = append(tariffModelsUsed, calcDay(start, int(start.Weekday()), fromOffset, toOffset)...)
+		tariffModelsUsed = append(tariffModelsUsed, calcDay(tariffPlan, start, int(start.Weekday()), fromOffset, toOffset)...)
 		startEpoch = startEpoch + SECS_PER_DAY-fromOffset
-		if startEpoch > toEpoch {
+		if startEpoch >= toEpoch {
 			break
 		}
 	}
-	lastWeekday := ""
-	for _, tmUsed := range tariffModelsUsed {
-		if lastWeekday != tmUsed.Day {
-			fmt.Println("--------------------------------")
-			lastWeekday = tmUsed.Day
-		}
-		fmt.Printf("%+v\n", tmUsed)
-	}
+
+
+	return tariffModelsUsed
 
 }
 
-func main() {
-	now := time.Now()
-	from := time.Date(now.Year(), now.Month(), now.Day(), 13, 0, 0, 0, time.Local)
-	to := time.Date(now.Year(), now.Month(), now.Day()+5, 13, 0, 0, 0, time.Local)
-	PrintDays(from.Unix(), to.Unix())
-}
