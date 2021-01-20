@@ -237,7 +237,12 @@ func PrintDays(fromEpoch int64, toEpoch int64) {
 			break
 		}
 	}
+	lastWeekday := ""
 	for _, tmUsed := range tariffModelsUsed {
+		if lastWeekday != tmUsed.Day {
+			fmt.Println("--------------------------------")
+			lastWeekday = tmUsed.Day
+		}
 		fmt.Printf("%+v\n", tmUsed)
 	}
 
@@ -246,6 +251,6 @@ func PrintDays(fromEpoch int64, toEpoch int64) {
 func main() {
 	now := time.Now()
 	from := time.Date(now.Year(), now.Month(), now.Day(), 13, 0, 0, 0, time.Local)
-	to := time.Date(now.Year(), now.Month(), now.Day()+2, 11, 0, 0, 0, time.Local)
+	to := time.Date(now.Year(), now.Month(), now.Day()+5, 13, 0, 0, 0, time.Local)
 	PrintDays(from.Unix(), to.Unix())
 }
