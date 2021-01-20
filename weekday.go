@@ -17,12 +17,13 @@ type Tariffplan struct {
 }
 
 type TariffModelsUsed struct {
-	Date        string
-	Day         string
-	From        string
-	To          string
-	Duration    string
-	TariffModel string
+	Date           string
+	Day            string
+	From           string
+	To             string
+	Duration       string
+	DurationInSecs int64
+	TariffModel    string
 }
 
 
@@ -125,12 +126,13 @@ func calcDay(tp* Tariffplan, from time.Time, day int, fromOffset, toOffset int64
 			//fmt.Printf("TariffModel: %v, Duration: %v:%v:%v\n", tariffModels[i], h, m, s)
 
 			usedTariffModels = append(usedTariffModels, TariffModelsUsed{
-				Date:        fmt.Sprintf("%v/%v/%v", dayYear, dayMonth, dayDay),
-				Day:         fmt.Sprintf("%v", day2str(day)),
-				From:        fmt.Sprintf("%v:%v:%v", fromHH, fromMM, fromSS),
-				To:          fmt.Sprintf("%v:%v:%v", toHH, toMM, toSS),
-				Duration:    fmt.Sprintf("%v:%v:%v", h, m, s),
-				TariffModel: fmt.Sprintf("%v", tariffModels[i].TariffModel),
+				Date:           fmt.Sprintf("%v/%v/%v", dayYear, dayMonth, dayDay),
+				Day:            fmt.Sprintf("%v", day2str(day)),
+				From:           fmt.Sprintf("%v:%v:%v", fromHH, fromMM, fromSS),
+				To:             fmt.Sprintf("%v:%v:%v", toHH, toMM, toSS),
+				Duration:       fmt.Sprintf("%v:%v:%v", h, m, s),
+				DurationInSecs: duration,
+				TariffModel:    fmt.Sprintf("%v", tariffModels[i].TariffModel),
 			})
 
 		} else if i == firstIndexToTake {
@@ -141,12 +143,13 @@ func calcDay(tp* Tariffplan, from time.Time, day int, fromOffset, toOffset int64
 
 			//fmt.Printf("TariffModel: %v, Duration: %v:%v:%v\n", tariffModels[i], h, m, s)
 			usedTariffModels = append(usedTariffModels, TariffModelsUsed{
-				Date:        fmt.Sprintf("%v/%v/%v", dayYear, dayMonth, dayDay),
-				Day:         fmt.Sprintf("%v", day2str(day)),
-				From:        fmt.Sprintf("%v:%v:%v", fromHH, fromMM, fromSS),
-				To:          fmt.Sprintf("%v:%v:%v", toHH, toMM, toSS),
-				Duration:    fmt.Sprintf("%v:%v:%v", h, m, s),
-				TariffModel: fmt.Sprintf("%v", tariffModels[i].TariffModel),
+				Date:           fmt.Sprintf("%v/%v/%v", dayYear, dayMonth, dayDay),
+				Day:            fmt.Sprintf("%v", day2str(day)),
+				From:           fmt.Sprintf("%v:%v:%v", fromHH, fromMM, fromSS),
+				To:             fmt.Sprintf("%v:%v:%v", toHH, toMM, toSS),
+				Duration:       fmt.Sprintf("%v:%v:%v", h, m, s),
+				DurationInSecs: duration,
+				TariffModel:    fmt.Sprintf("%v", tariffModels[i].TariffModel),
 			})
 		} else if i == lastIndexToTake {
 			duration = toOffset - tariffModels[i].OffsetInMinutes
@@ -156,12 +159,13 @@ func calcDay(tp* Tariffplan, from time.Time, day int, fromOffset, toOffset int64
 
 			//fmt.Printf("TariffModel: %v, Duration: %v:%v:%v\n", tariffModels[i], h, m, s)
 			usedTariffModels = append(usedTariffModels, TariffModelsUsed{
-				Date:        fmt.Sprintf("%v/%v/%v", dayYear, dayMonth, dayDay),
-				Day:         fmt.Sprintf("%v", day2str(day)),
-				From:        fmt.Sprintf("%v:%v:%v", fromHH, fromMM, fromSS),
-				To:          fmt.Sprintf("%v:%v:%v", toHH, toMM, toSS),
-				Duration:    fmt.Sprintf("%v:%v:%v", h, m, s),
-				TariffModel: fmt.Sprintf("%v", tariffModels[i].TariffModel),
+				Date:           fmt.Sprintf("%v/%v/%v", dayYear, dayMonth, dayDay),
+				Day:            fmt.Sprintf("%v", day2str(day)),
+				From:           fmt.Sprintf("%v:%v:%v", fromHH, fromMM, fromSS),
+				To:             fmt.Sprintf("%v:%v:%v", toHH, toMM, toSS),
+				Duration:       fmt.Sprintf("%v:%v:%v", h, m, s),
+				DurationInSecs: duration,
+				TariffModel:    fmt.Sprintf("%v", tariffModels[i].TariffModel),
 			})
 		} else {
 			duration = tariffModels[i+1].OffsetInMinutes - tariffModels[i].OffsetInMinutes
@@ -171,12 +175,13 @@ func calcDay(tp* Tariffplan, from time.Time, day int, fromOffset, toOffset int64
 
 			//fmt.Printf("TariffModel: %v, Duration: %v:%v:%v\n", tariffModels[i], h, m, s)
 			usedTariffModels = append(usedTariffModels, TariffModelsUsed{
-				Date:        fmt.Sprintf("%v/%v/%v", dayYear, dayMonth, dayDay),
-				Day:         fmt.Sprintf("%v", day2str(day)),
-				From:        fmt.Sprintf("%v:%v:%v", fromHH, fromMM, fromSS),
-				To:          fmt.Sprintf("%v:%v:%v", toHH, toMM, toSS),
-				Duration:    fmt.Sprintf("%v:%v:%v", h, m, s),
-				TariffModel: fmt.Sprintf("%v", tariffModels[i].TariffModel),
+				Date:           fmt.Sprintf("%v/%v/%v", dayYear, dayMonth, dayDay),
+				Day:            fmt.Sprintf("%v", day2str(day)),
+				From:           fmt.Sprintf("%v:%v:%v", fromHH, fromMM, fromSS),
+				To:             fmt.Sprintf("%v:%v:%v", toHH, toMM, toSS),
+				Duration:       fmt.Sprintf("%v:%v:%v", h, m, s),
+				DurationInSecs: duration,
+				TariffModel:    fmt.Sprintf("%v", tariffModels[i].TariffModel),
 			})
 		}
 	}
