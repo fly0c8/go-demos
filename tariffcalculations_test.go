@@ -7,18 +7,13 @@ import (
 )
 
 
-func Test1(t *testing.T) {
+func makeTariffPlan() *Tariffplan {
 
-}
-
-func Test_FindTariffModelsAndDurations_CorrecTariffmodelsAreUsed(t *testing.T) {
-	
 	exceptiondayThursday, _ := time.Parse(time.RFC3339, "2021-01-21T01:00:00+01:00")
 	exceptiondayFriday, _ := time.Parse(time.RFC3339, "2021-01-22T01:00:00+01:00")
 	exceptiondayMonday, _ := time.Parse(time.RFC3339, "2021-01-25T01:00:00+01:00")
 
-
-	tp := Tariffplan{
+	return &Tariffplan{
 		MaxTariff: 20,
 		WeekdayModels: []WeekdayModel{
 			{ Weekday: 0, AssignedTariffModels: []AssignedTariffModel{
@@ -77,6 +72,19 @@ func Test_FindTariffModelsAndDurations_CorrecTariffmodelsAreUsed(t *testing.T) {
 			},
 		},
 	}
+}
+func Test1(t *testing.T) {
+	tp := makeTariffPlan()
+
+	from, _ := time.Parse(time.RFC3339, "2021-01-21T13:00:00+01:00")
+	to, _ := time.Parse(time.RFC3339, "2021-01-25T00:01:01+01:00")
+	tms := GetTariffmodelsForCalculation(tp, from.Unix(), to.Unix())
+	prettyPrint(tms)
+}
+
+func Test_FindTariffModelsAndDurations_CorrecTariffmodelsAreUsed(t *testing.T) {
+
+	tp := makeTariffPlan()
 
 	sFrom := "2021-01-18T01:00:00+01:00"
 	sTo := "2021-01-25T00:02:01+01:00"
@@ -89,16 +97,12 @@ func Test_FindTariffModelsAndDurations_CorrecTariffmodelsAreUsed(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Println("************************************************************************")
-	fmt.Println("From:", sFrom)
-	fmt.Println("To:", sTo)
-	fmt.Println("************************************************************************")
-	tariffModelsUsed := GetTariffModelsToUse(&tp, from.Unix(), to.Unix())
+	tariffmodelsForCalculation := GetTariffmodelsForCalculation(tp, from.Unix(), to.Unix())
 
-	got := len(tariffModelsUsed)
+	got := len(tariffmodelsForCalculation.Tariffmodels)
 	want := 13
 	if got != want {
-		prettyPrint(tariffModelsUsed)
+		prettyPrint(tariffmodelsForCalculation)
 		t.Errorf("lenTariffModelsUsed: got: %v, want: %v", got, want)
 	}
 
@@ -174,32 +178,39 @@ func Test_FindTariffModelsAndDurations_CorrecTariffmodelsAreUsed(t *testing.T) {
 		},
 	}
 
-	prettyPrint(tariffModelsUsed)
-
-
-	for i := 0; i<len(tariffModelsUsed); i ++ {
-		if tariffModelsUsed[i].Day != wantedValues[i].Day {
-			t.Errorf("wrong day at index: %v. %v != %v",i, tariffModelsUsed[i].Day, wantedValues[i].Day)
+	for i := 0; i<len(tariffmodelsForCalculation.Tariffmodels); i ++ {
+		if tariffmodelsForCalculation.Tariffmodels[i].Day != wantedValues[i].Day {
+			t.Errorf("wrong day at index: %v. %v != %v",i, tariffmodelsForCalculation.Tariffmodels[i].Day, wantedValues[i].Day)
 		}
-		if tariffModelsUsed[i].DurationInSecs != wantedValues[i].DurationInSecs {
-			t.Errorf("wrong DurationInSecs at index: %v. %v != %v",i, tariffModelsUsed[i].DurationInSecs, wantedValues[i].DurationInSecs)
+		if tariffmodelsForCalculation.Tariffmodels[i].DurationInSecs != wantedValues[i].DurationInSecs {
+			t.Errorf("wrong DurationInSecs at index: %v. %v != %v",i, tariffmodelsForCalculation.Tariffmodels[i].DurationInSecs, wantedValues[i].DurationInSecs)
 		}
-		if tariffModelsUsed[i].TariffModel != wantedValues[i].TariffModel {
-			t.Errorf("wrong TariffModel at index: %v. %v != %v",i, tariffModelsUsed[i].TariffModel, wantedValues[i].TariffModel)
+		if tariffmodelsForCalculation.Tariffmodels[i].TariffModel != wantedValues[i].TariffModel {
+			t.Errorf("wrong TariffModel at index: %v. %v != %v",i, tariffmodelsForCalculation.Tariffmodels[i].TariffModel, wantedValues[i].TariffModel)
 		}
 	}
 
 
 }
-func prettyPrint(tariffModelsUsed []TariffModelsToUse) {
+func prettyPrint(tariffModelsUsed *TariffmodelsForCalc) {
 	lastWeekday := ""
-	for _, tmUsed := range tariffModelsUsed {
+	for _, tmUsed := range tariffModelsUsed.Tariffmodels {
 		if lastWeekday != tmUsed.Day {
 			fmt.Println("------------------------------------------------------------------------------------------------")
 			lastWeekday = tmUsed.Day
 		}
 		fmt.Printf("%+v\n", tmUsed)
 	}
+	fmt.Println("=== Summary ===")
+	fmt.Printf("Timerange: From: %v, To: %v\n", time.Unix(tariffModelsUsed.FromEpoch,0), time.Unix(tariffModelsUsed.ToEpoch,0))
+	for k, v := range tariffModelsUsed.DurationPerModelSummary {
+		h,m,s := offsetToHMS(v)
+		fmt.Printf("%v => %v \t(%vh:%02vm:%02vs)\n", k,v, h,m,s)
+	}
+
+
+	fmt.Println("=========================================================================================================")
+
 }
 
 //sparkApiServer=# select * from tariffstructure where id=198;

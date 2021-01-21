@@ -38,8 +38,13 @@ type Tariffplan struct {
 	ExceptiondayModels []ExceptiondayModel
 }
 
-
-type TariffModelsToUse struct {
+type TariffmodelsForCalc struct {
+	FromEpoch int64
+	ToEpoch int64
+	Tariffmodels []TariffmodelForCalc
+	DurationPerModelSummary map[string]int64
+}
+type TariffmodelForCalc struct {
 	Date           string
 	Day            string
 	From           string
@@ -76,14 +81,14 @@ func offsetToHMS(offsetInSeconds int64) (int64, int64, int64) {
 	seconds := remainingSecs % 60
 	return hours, minutes, seconds
 }
-func calcDay(tp* Tariffplan, from_lt time.Time, day int, fromOffset, toOffset int64) []TariffModelsToUse {
+func calcDay(tp* Tariffplan, from_lt time.Time, day int, fromOffset, toOffset int64) []TariffmodelForCalc {
 
 	//fromH, fromM, fromS := offsetToHMS(fromOffset)
 	//toH, toM, toS := offsetToHMS(toOffset)
 	//fmt.Printf("calcDay: day=%v, fromOffset=%v:%v:%v, toOffset=%v:%v:%v\n", day, fromH, fromM, fromS, toH,toM,toS)
 
 	dayYear, dayMonth, dayDay := from_lt.Date()
-	usedTariffModels := []TariffModelsToUse{}
+	tariffmodelForCalcs := []TariffmodelForCalc{}
 
 	tariffModels := []AssignedTariffModel{}
 
@@ -164,7 +169,7 @@ func calcDay(tp* Tariffplan, from_lt time.Time, day int, fromOffset, toOffset in
 			fromHH, fromMM, fromSS := offsetToHMS(fromOffset)
 			toHH, toMM, toSS := offsetToHMS(toOffset)
 
-			usedTariffModels = append(usedTariffModels, TariffModelsToUse{
+			tariffmodelForCalcs = append(tariffmodelForCalcs, TariffmodelForCalc{
 				Date:           fmt.Sprintf("%v/%v/%v", dayYear, dayMonth, dayDay),
 				Day:            fmt.Sprintf("%v", day2str(day)),
 				From:           fmt.Sprintf("%v:%v:%v", fromHH, fromMM, fromSS),
@@ -181,7 +186,7 @@ func calcDay(tp* Tariffplan, from_lt time.Time, day int, fromOffset, toOffset in
 			toHH, toMM, toSS := offsetToHMS(tariffModels[i+1].OffsetInMinutes)
 
 			//fmt.Printf("TariffModel: %v, Duration: %v:%v:%v\n", tariffModels[i], h, m, s)
-			usedTariffModels = append(usedTariffModels, TariffModelsToUse{
+			tariffmodelForCalcs = append(tariffmodelForCalcs, TariffmodelForCalc{
 				Date:           fmt.Sprintf("%v/%v/%v", dayYear, dayMonth, dayDay),
 				Day:            fmt.Sprintf("%v", day2str(day)),
 				From:           fmt.Sprintf("%v:%v:%v", fromHH, fromMM, fromSS),
@@ -197,7 +202,7 @@ func calcDay(tp* Tariffplan, from_lt time.Time, day int, fromOffset, toOffset in
 			toHH, toMM, toSS := offsetToHMS(toOffset)
 
 			//fmt.Printf("TariffModel: %v, Duration: %v:%v:%v\n", tariffModels[i], h, m, s)
-			usedTariffModels = append(usedTariffModels, TariffModelsToUse{
+			tariffmodelForCalcs = append(tariffmodelForCalcs, TariffmodelForCalc{
 				Date:           fmt.Sprintf("%v/%v/%v", dayYear, dayMonth, dayDay),
 				Day:            fmt.Sprintf("%v", day2str(day)),
 				From:           fmt.Sprintf("%v:%v:%v", fromHH, fromMM, fromSS),
@@ -213,7 +218,7 @@ func calcDay(tp* Tariffplan, from_lt time.Time, day int, fromOffset, toOffset in
 			toHH, toMM, toSS := offsetToHMS(tariffModels[i+1].OffsetInMinutes)
 
 			//fmt.Printf("TariffModel: %v, Duration: %v:%v:%v\n", tariffModels[i], h, m, s)
-			usedTariffModels = append(usedTariffModels, TariffModelsToUse{
+			tariffmodelForCalcs = append(tariffmodelForCalcs, TariffmodelForCalc{
 				Date:           fmt.Sprintf("%v/%v/%v", dayYear, dayMonth, dayDay),
 				Day:            fmt.Sprintf("%v", day2str(day)),
 				From:           fmt.Sprintf("%v:%v:%v", fromHH, fromMM, fromSS),
@@ -224,14 +229,15 @@ func calcDay(tp* Tariffplan, from_lt time.Time, day int, fromOffset, toOffset in
 			})
 		}
 	}
-	return usedTariffModels
+
+	return tariffmodelForCalcs
 }
 const(
 	SECS_PER_DAY  = int64(86400)
 )
-func GetTariffModelsToUse(tariffPlan *Tariffplan, fromEpoch int64, toEpoch int64) []TariffModelsToUse {
+func GetTariffmodelsForCalculation(tariffPlan *Tariffplan, fromEpoch int64, toEpoch int64) *TariffmodelsForCalc {
 
-	tariffModelsUsed := []TariffModelsToUse{}
+	tariffModelsUsed := []TariffmodelForCalc{}
 	startEpoch := fromEpoch
 
 	for {
@@ -249,7 +255,19 @@ func GetTariffModelsToUse(tariffPlan *Tariffplan, fromEpoch int64, toEpoch int64
 			break
 		}
 	}
-	return tariffModelsUsed
+
+
+	res := TariffmodelsForCalc{
+		FromEpoch: fromEpoch,
+		ToEpoch: toEpoch,
+		Tariffmodels:            tariffModelsUsed,
+		DurationPerModelSummary: make(map[string]int64),
+	}
+	for _, tm := range res.Tariffmodels {
+		res.DurationPerModelSummary[tm.TariffModel] += tm.DurationInSecs
+	}
+
+	return &res
 
 }
 
