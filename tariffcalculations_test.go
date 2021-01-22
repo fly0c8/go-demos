@@ -7,79 +7,36 @@ import (
 )
 
 
-func makeTariffPlan() *Tariffplan {
 
-	exceptiondayThursday, _ := time.Parse(time.RFC3339, "2021-01-21T01:00:00+01:00")
-	exceptiondayFriday, _ := time.Parse(time.RFC3339, "2021-01-22T01:00:00+01:00")
-	exceptiondayMonday, _ := time.Parse(time.RFC3339, "2021-01-25T01:00:00+01:00")
+//func Test1(t *testing.T) {
+//	tp := makeTariffPlan()
+//
+//	from, _ := time.Parse(time.RFC3339, "2021-01-21T13:00:00+01:00")
+//	to, _ := time.Parse(time.RFC3339, "2021-01-25T00:01:01+01:00")
+//	tms := GetTariffmodelsForCalculation(tp, from.Unix(), to.Unix())
+//	prettyPrint(tms)
+//}
 
-	return &Tariffplan{
-		MaxTariff: 20,
-		WeekdayModels: []WeekdayModel{
-			{ Weekday: 0, AssignedTariffModels: []AssignedTariffModel{
-				{OffsetInMinutes: 0, TariffModelUuid: "fullday"},
-			}},
-			{ Weekday: 1, AssignedTariffModels: []AssignedTariffModel{
-				{OffsetInMinutes: 0, TariffModelUuid: "frueh"},
-				{OffsetInMinutes: 21600, TariffModelUuid: "vormittag"},
-				{OffsetInMinutes: 43200, TariffModelUuid: "nachmittag"},
-				{OffsetInMinutes: 64800, TariffModelUuid: "abend"},
-			}},
-			{ Weekday: 2, AssignedTariffModels: []AssignedTariffModel{
-				{OffsetInMinutes: 0, TariffModelUuid: "vormittag"},
-				{OffsetInMinutes: 43200, TariffModelUuid: "nachmittag"},
-			}},
-			{ Weekday: 3, AssignedTariffModels: []AssignedTariffModel{
-				{OffsetInMinutes: 0, TariffModelUuid: "vormittag"},
-				{OffsetInMinutes: 43200, TariffModelUuid: "nachmittag"},
-			}},
-			{ Weekday: 4, AssignedTariffModels: []AssignedTariffModel{
-				{OffsetInMinutes: 0, TariffModelUuid: "vormittag"},
-				{OffsetInMinutes: 43200, TariffModelUuid: "nachmittag"},
-			}},
-			{ Weekday: 5, AssignedTariffModels: []AssignedTariffModel{
-				{OffsetInMinutes: 0, TariffModelUuid: "vormittag"},
-				{OffsetInMinutes: 43200, TariffModelUuid: "nachmittag"},
-			}},
-			{ Weekday: 6, AssignedTariffModels: []AssignedTariffModel{
-				{OffsetInMinutes: 0, TariffModelUuid: "fullday"},
-			}},
-		},
-		ExceptiondayModels: []ExceptiondayModel{
-			{
-				LocalDate: exceptiondayThursday,
-				Name:                 "DonnerstagsFeiertag",
-				AssignedTariffModels: []AssignedTariffModel{{
-					OffsetInMinutes: 0,
-					TariffModelUuid: "feiertag",
-				}},
-			},
-			{
-				LocalDate: exceptiondayFriday,
-				Name:                 "FreitagsFeiertag",
-				AssignedTariffModels: []AssignedTariffModel{{
-					OffsetInMinutes: 0,
-					TariffModelUuid: "feiertag",
-				}},
-			},
-			{
-				LocalDate: exceptiondayMonday,
-				Name:                 "FreitagsMontag",
-				AssignedTariffModels: []AssignedTariffModel{{
-					OffsetInMinutes: 0,
-					TariffModelUuid: "feiertag",
-				}},
-			},
-		},
+func Test_CalcTariffModel_CorrectAmountReturned(t *testing.T) {
+	tm := makeTariffModel()
+
+	got := tm.Calculate(3)
+	expected := 7
+	if got != expected {
+		t.Errorf("Expected: %d, Got: %d", expected, got)
 	}
-}
-func Test1(t *testing.T) {
-	tp := makeTariffPlan()
 
-	from, _ := time.Parse(time.RFC3339, "2021-01-21T13:00:00+01:00")
-	to, _ := time.Parse(time.RFC3339, "2021-01-25T00:01:01+01:00")
-	tms := GetTariffmodelsForCalculation(tp, from.Unix(), to.Unix())
-	prettyPrint(tms)
+	got = tm.Calculate(20)
+	expected = 57
+	if got != expected {
+		t.Errorf("Expected: %d, Got: %d", expected, got)
+	}
+
+	got = tm.Calculate(60)
+	expected = 257
+	if got != expected {
+		t.Errorf("Expected: %d, Got: %d", expected, got)
+	}
 }
 
 func Test_FindTariffModelsAndDurations_CorrecTariffmodelsAreUsed(t *testing.T) {
