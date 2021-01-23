@@ -54,7 +54,8 @@ func Test_FindTariffModelsAndDurations_CorrecTariffmodelsAreUsed(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	tariffmodelsForCalculation := GetTariffmodelsForCalculation(tp, from.Unix(), to.Unix())
+	//tariffmodelsForCalculation := GetTariffmodelsForCalculation(tp, from.Unix(), to.Unix())
+	tariffmodelsForCalculation := tp.FindTariffmodelsForCalculation(from.Unix(), to.Unix())
 
 	got := len(tariffmodelsForCalculation.Tariffmodels)
 	want := 13
@@ -169,15 +170,3 @@ func prettyPrint(tariffModelsUsed *TariffmodelsForCalc) {
 	fmt.Println("=========================================================================================================")
 
 }
-
-//sparkApiServer=# select * from tariffstructure where id=198;
-//id  |                 uuid                 | tariffstructure | description |          created           |          updated           | deleted
-//-----+--------------------------------------+-----------------+-------------+----------------------------+----------------------------+---------
-//198 | 8815fd6a-6e13-4199-9d01-72ad47b82603 | arnitest        | asdfadf     | 2021-01-20 19:04:57.509739 | 2021-01-20 19:05:38.029605 |
-//(1 row)
-//
-//sparkApiServer=# select * from tariffstep where tariffstructure_id=198;
-//id  | uuid | tariffstructure_id | index | duration | multiplier | value |          created           | updated | deleted
-//-----+------+--------------------+-------+----------+------------+-------+----------------------------+---------+---------
-//201 |      |                198 |     0 |      600 |          3 |   100 | 2021-01-20 19:05:38.029605 |         |
-//202 |      |                198 |     1 |      600 |          1 |   200 | 2021-01-20 19:05:38.029605 |         |

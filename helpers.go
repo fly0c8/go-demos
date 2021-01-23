@@ -1,6 +1,7 @@
 package main
 
 import "time"
+
 func makeTariffModel() *TariffModel{
 	tm := &TariffModel{
 		Uuid:        "u1",
@@ -11,14 +12,14 @@ func makeTariffModel() *TariffModel{
 				Index:                 0,
 				StepDurationInMinutes: 10,
 				ValueInCents:          7,
-				TimeUnitInMinutes:     0,
+				TimeIntervalInMinutes: 0,
 				CalcMethod:            CALCMETHOD_CONSTANT,
 			},
 			{
 				Index:                 1,
 				StepDurationInMinutes: 20,
 				ValueInCents:          300,
-				TimeUnitInMinutes:     60,
+				TimeIntervalInMinutes: 60,
 				CalcMethod:            CALCMETHOD_VALUE_PER_TIMEUNIT,
 			},
 			// every 10 minutes, raise value by 50 cents, starting with 50 cents
@@ -26,7 +27,7 @@ func makeTariffModel() *TariffModel{
 				Index:                 2,
 				StepDurationInMinutes: 0,
 				ValueInCents:          50,
-				TimeUnitInMinutes:     10,
+				TimeIntervalInMinutes: 10,
 				CalcMethod:            CALCMETHOD_STEPWISE_STARTING_WITH_VALUE,
 			},
 
