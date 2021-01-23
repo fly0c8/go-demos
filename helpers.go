@@ -2,6 +2,26 @@ package main
 
 import "time"
 
+
+
+func makeSimpleTariffModel() *TariffModel{
+	tm := &TariffModel{
+		Uuid:        "u1",
+		Name:        "tm1",
+		Description: "simple",
+		Tariffsteps: []Tariffstep{
+			{
+				Index:                 0,
+				StepDurationInMinutes: 0,
+				ValueInCents:          60,
+				TimeIntervalInMinutes: 60,
+				CalcMethod:            CALCMETHOD_VALUE_PER_TIMEUNIT,
+			},
+		},
+	}
+	return tm
+}
+
 func makeTariffModel() *TariffModel{
 	tm := &TariffModel{
 		Uuid:        "u1",
@@ -99,5 +119,32 @@ func makeTariffPlan() *Tariffplan {
 				}},
 			},
 		},
+	}
+}
+func offsetToHMS(offsetInSeconds int64) (int64, int64, int64) {
+	hours := offsetInSeconds / 3600
+	remainingSecs := offsetInSeconds % 3600
+	minutes := remainingSecs / 60
+	seconds := remainingSecs % 60
+	return hours, minutes, seconds
+}
+func day2str(day int) string {
+	switch day {
+	case 0:
+		return "sun"
+	case 1:
+		return "mon"
+	case 2:
+		return "tue"
+	case 3:
+		return "wed"
+	case 4:
+		return "thu"
+	case 5:
+		return "fri"
+	case 6:
+		return "sat"
+	default:
+		panic("day invalid")
 	}
 }

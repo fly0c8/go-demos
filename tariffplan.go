@@ -26,9 +26,26 @@ type Tariffplan struct {
 	ValidFromEpoch int64
 	WeekdayModels []WeekdayModel
 	ExceptiondayModels []ExceptiondayModel
+
 }
 
-func (tp *Tariffplan) FindTariffmodelsForCalculation(fromEpoch int64, toEpoch int64) *TariffmodelsForCalc {
+func findTariffModelByUuid(uuid string) (*TariffModel, error) {
+	return makeSimpleTariffModel(), nil
+}
+func (tp *Tariffplan) CalculateAmountInCents(fromEpoch, toEpoch int64) (int64, error) {
+	tms := tp.findTariffmodelsForCalculation(fromEpoch, toEpoch)
+	var amount int64
+	for tmUuid, duration := range tms.DurationPerModelSummary {
+		tm, err := findTariffModelByUuid(tmUuid)
+		if err != nil {
+			return 0, err
+		}
+		amount += tm.CalculateAmountInCents(duration/60)
+	}
+	return amount, nil
+}
+
+func (tp *Tariffplan) findTariffmodelsForCalculation(fromEpoch int64, toEpoch int64) *TariffmodelsForCalc {
 
 	tariffModelsUsed := []TariffmodelForCalc{}
 	startEpoch := fromEpoch

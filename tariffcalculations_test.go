@@ -20,19 +20,19 @@ import (
 func Test_CalcTariffModel_CorrectAmountReturned(t *testing.T) {
 	tm := makeTariffModel()
 
-	got := tm.Calculate(3)
-	expected := 7
+	got := tm.CalculateAmountInCents(3)
+	expected := int64(7)
 	if got != expected {
 		t.Errorf("Expected: %d, Got: %d", expected, got)
 	}
 
-	got = tm.Calculate(20)
+	got = tm.CalculateAmountInCents(20)
 	expected = 57
 	if got != expected {
 		t.Errorf("Expected: %d, Got: %d", expected, got)
 	}
 
-	got = tm.Calculate(60)
+	got = tm.CalculateAmountInCents(60)
 	expected = 257
 	if got != expected {
 		t.Errorf("Expected: %d, Got: %d", expected, got)
@@ -55,7 +55,7 @@ func Test_FindTariffModelsAndDurations_CorrecTariffmodelsAreUsed(t *testing.T) {
 		t.Fatal(err)
 	}
 	//tariffmodelsForCalculation := GetTariffmodelsForCalculation(tp, from.Unix(), to.Unix())
-	tariffmodelsForCalculation := tp.FindTariffmodelsForCalculation(from.Unix(), to.Unix())
+	tariffmodelsForCalculation := tp.findTariffmodelsForCalculation(from.Unix(), to.Unix())
 
 	got := len(tariffmodelsForCalculation.Tariffmodels)
 	want := 13

@@ -28,37 +28,36 @@ type TariffModel struct {
 	Tariffsteps []Tariffstep
 }
 
-func(tm *TariffModel) Calculate(duration int) int {
+func(tm *TariffModel) CalculateAmountInCents(durationInMinutes int64) int64 {
 
-	var result int
-	var totalCalculatedDuration int
+	var result int64
+	var totalCalculatedDuration int64
 
 	for i, step := range tm.Tariffsteps {
-
-		var stepDurationForCalc int
+		var stepDurationForCalc int64
 		if i < len(tm.Tariffsteps)-1 {
-			stepDurationForCalc = step.StepDurationInMinutes
-			if totalCalculatedDuration+ stepDurationForCalc > duration {
-				diff := totalCalculatedDuration + stepDurationForCalc - duration
+			stepDurationForCalc = int64(step.StepDurationInMinutes)
+			if totalCalculatedDuration+ stepDurationForCalc > durationInMinutes {
+				diff := totalCalculatedDuration + stepDurationForCalc - durationInMinutes
 				stepDurationForCalc -= diff
 			}
 		} else {
 			// last tariffstep used for the remaining time
-			stepDurationForCalc = duration - totalCalculatedDuration
+			stepDurationForCalc = durationInMinutes - totalCalculatedDuration
 		}
 		totalCalculatedDuration += stepDurationForCalc
 
 		switch step.CalcMethod {
 		case CALCMETHOD_CONSTANT:
-			result += step.ValueInCents
+			result += int64(step.ValueInCents)
 		case CALCMETHOD_VALUE_PER_TIMEUNIT:
-			result += stepDurationForCalc *step.ValueInCents/step.TimeIntervalInMinutes
+			result += stepDurationForCalc * int64(step.ValueInCents)/int64(step.TimeIntervalInMinutes)
 		case CALCMETHOD_STEPWISE_STARTING_WITH_ZERO:
-			result += int(math.Floor(float64(stepDurationForCalc)/float64(step.TimeIntervalInMinutes)))*step.ValueInCents
+			result += int64(math.Floor(float64(stepDurationForCalc)/float64(step.TimeIntervalInMinutes)))*int64(step.ValueInCents)
 		case CALCMETHOD_STEPWISE_STARTING_WITH_VALUE:
-			result += int(math.Ceil(float64(stepDurationForCalc/step.TimeIntervalInMinutes)))*step.ValueInCents
+			result += int64(math.Ceil(float64(stepDurationForCalc/int64(step.TimeIntervalInMinutes))))*int64(step.ValueInCents)
 		}
-		if totalCalculatedDuration == duration {
+		if totalCalculatedDuration == durationInMinutes {
 			break
 		}
 	}
