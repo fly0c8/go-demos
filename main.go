@@ -8,6 +8,7 @@ import (
 
 func main() {
 
+
 	call_tariffplan()
 	//call_tariffmodel()
 
@@ -25,6 +26,7 @@ func call_tariffplan() {
 	m["vormittag"] = makeSimpleTariffModel()
 	m["nachmittag"] = makeSimpleTariffModel()
 	m["abend"] = makeSimpleTariffModel()
+	m["feiertag"] = makeSimpleTariffModel()
 	m["fullday"] = makeSimpleTariffModel()
 	tariffPlan.SetTariffModelMap(m)
 	sFrom := "2021-01-18T01:00:00+01:00"

@@ -6,6 +6,9 @@ import (
 	"time"
 )
 
+func init() {
+	time.Local = time.FixedZone("mytz", 1*60*60)
+}
 
 
 func Test_CalcTariffplan_CorrrectAmountReturned(t *testing.T) {
