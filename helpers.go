@@ -21,6 +21,37 @@ func makeSimpleTariffModel() *TariffModel{
 	}
 	return tm
 }
+func makeComplexTariffModel() *TariffModel{
+	tm := &TariffModel{
+		Uuid:        "u1",
+		Name:        "tm1",
+		Description: "simple1",
+		Tariffsteps: []Tariffstep{
+			{
+				Index:                 0,
+				StepDurationInMinutes: 60,
+				ValueInCents:          10,
+				TimeIntervalInMinutes: 0,
+				CalcMethod:            CALCMETHOD_CONSTANT,
+			},
+			{
+				Index:                 1,
+				StepDurationInMinutes: 300,
+				ValueInCents:          10,
+				TimeIntervalInMinutes: 30,
+				CalcMethod:            CALCMETHOD_CONSTANT,
+			},
+			{
+				Index:                 2,
+				StepDurationInMinutes: 0,
+				ValueInCents:          100,
+				TimeIntervalInMinutes: 30,
+				CalcMethod:            CALCMETHOD_STEPWISE_STARTING_WITH_VALUE,
+			},
+		},
+	}
+	return tm
+}
 
 func makeTariffModel() *TariffModel{
 	tm := &TariffModel{
@@ -68,7 +99,7 @@ func makeTariffPlan() *Tariffplan {
 				{OffsetInMinutes: 0, TariffModelUuid: "fullday"},
 			}},
 			{ Weekday: 1, AssignedTariffModels: []AssignedTariffModel{
-				{OffsetInMinutes: 0, TariffModelUuid: "frueh"},
+				{OffsetInMinutes: 0, TariffModelUuid: "morgen"},
 				{OffsetInMinutes: 21600, TariffModelUuid: "vormittag"},
 				{OffsetInMinutes: 43200, TariffModelUuid: "nachmittag"},
 				{OffsetInMinutes: 64800, TariffModelUuid: "abend"},

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"time"
 )
@@ -26,23 +27,27 @@ type Tariffplan struct {
 	ValidFromEpoch int64
 	WeekdayModels []WeekdayModel
 	ExceptiondayModels []ExceptiondayModel
-
+	TariffModelMap map[string]*TariffModel
 }
 
-func findTariffModelByUuid(uuid string) (*TariffModel, error) {
-	return makeSimpleTariffModel(), nil
-}
 func (tp *Tariffplan) CalculateAmountInCents(fromEpoch, toEpoch int64) (int64, error) {
+
+	if tp.TariffModelMap == nil {
+		return 0, errors.New("Invalid Tariffplan configuration: TariffModelMap missing")
+	}
 	tms := tp.findTariffmodelsForCalculation(fromEpoch, toEpoch)
 	var amount int64
 	for tmUuid, duration := range tms.DurationPerModelSummary {
-		tm, err := findTariffModelByUuid(tmUuid)
-		if err != nil {
-			return 0, err
+		tm, found := tp.TariffModelMap[tmUuid]
+		if !found {
+			return 0, errors.New("Invalid Tariffplan configuration: missing tariffmodel uuid:"+tmUuid)
 		}
 		amount += tm.CalculateAmountInCents(duration/60)
 	}
 	return amount, nil
+}
+func (tp *Tariffplan) SetTariffModelMap(tariffModelMap map[string]*TariffModel) {
+	tp.TariffModelMap = tariffModelMap
 }
 
 func (tp *Tariffplan) findTariffmodelsForCalculation(fromEpoch int64, toEpoch int64) *TariffmodelsForCalc {

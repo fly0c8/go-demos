@@ -8,18 +8,49 @@ import (
 
 
 
-//func Test1(t *testing.T) {
-//	tp := makeTariffPlan()
-//
-//	from, _ := time.Parse(time.RFC3339, "2021-01-21T13:00:00+01:00")
-//	to, _ := time.Parse(time.RFC3339, "2021-01-25T00:01:01+01:00")
-//	tms := GetTariffmodelsForCalculation(tp, from.Unix(), to.Unix())
-//	prettyPrint(tms)
-//}
+func Test_CalcTariffplan_CorrrectAmountReturned(t *testing.T) {
+	tariffPlan := makeTariffPlan()
+	m := make(map[string]*TariffModel)
+	m["morgen"] = makeSimpleTariffModel()
+	m["vormittag"] = makeSimpleTariffModel()
+	m["nachmittag"] = makeSimpleTariffModel()
+	m["abend"] = makeSimpleTariffModel()
+	m["feiertag"] = makeSimpleTariffModel()
+	m["fullday"] = makeSimpleTariffModel()
+	tariffPlan.SetTariffModelMap(m)
+
+	// 7days,1h,1s
+	sFrom := "2021-01-18T01:00:00+01:00"
+	sTo := "2021-01-25T02:01:00+01:00"
+
+	from, err := time.Parse(time.RFC3339, sFrom)
+	if err != nil {
+		t.Fatal(err)
+	}
+	to, err := time.Parse(time.RFC3339, sTo)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var add int64 = 0
+	for i:=0; i< 48; i++{
+		got, err := tariffPlan.CalculateAmountInCents(from.Unix()+add, to.Unix()+add)
+		add += 60
+		if err != nil {
+			t.Errorf("%v", err)
+		}
+		expected := int64(10141)
+		if expected != got {
+			t.Errorf("Expected: %d, Got: %d", expected, got)
+		}
+	}
+
+
+}
 
 func Test_CalcTariffModel_CorrectAmountReturned(t *testing.T) {
-	tm := makeTariffModel()
 
+	tm := makeTariffModel()
 	got := tm.CalculateAmountInCents(3)
 	expected := int64(7)
 	if got != expected {
@@ -72,7 +103,7 @@ func Test_FindTariffModelsAndDurations_CorrecTariffmodelsAreUsed(t *testing.T) {
 		{
 			Day:            "mon",
 			DurationInSecs: 18000,
-			TariffModel:    "frueh",
+			TariffModel:    "morgen",
 		},
 		{
 			Day:            "mon",
